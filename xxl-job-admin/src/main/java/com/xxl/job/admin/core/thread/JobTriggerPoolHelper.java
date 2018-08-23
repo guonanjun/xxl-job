@@ -20,19 +20,19 @@ public class JobTriggerPoolHelper {
     // ---------------------- trigger pool ----------------------
 
     private ThreadPoolExecutor triggerPool = new ThreadPoolExecutor(
-            50,
-            500,
+            20,
+            200,
             60L,
             TimeUnit.SECONDS,
             new LinkedBlockingQueue<Runnable>(100000),
             new ThreadPoolExecutor.CallerRunsPolicy());
 
 
-    public void addTrigger(final int jobId){
+    public void addTrigger(final int jobId, final int failRetryCount, final String type){
         triggerPool.execute(new Runnable() {
             @Override
             public void run() {
-                XxlJobTrigger.trigger(jobId);
+                XxlJobTrigger.trigger(jobId, failRetryCount, type);
             }
         });
     }
@@ -47,9 +47,16 @@ public class JobTriggerPoolHelper {
 
     private static JobTriggerPoolHelper helper = new JobTriggerPoolHelper();
 
-
-    public static void trigger(int jobId) {
-        helper.addTrigger(jobId);
+    /**
+     *
+     * @param jobId
+     * @param failRetryCount
+     * 			>=0: use this param
+     * 			<0: use param from job info config
+     *
+     */
+    public static void trigger(int jobId, int failRetryCount, String type) {
+        helper.addTrigger(jobId, failRetryCount, type);
     }
 
     public static void toStop(){
